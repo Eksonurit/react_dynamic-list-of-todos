@@ -9,6 +9,7 @@ import { Loader } from './components/Loader';
 
 import { Todo } from './types/Todo';
 import { getTodos } from './api';
+import { TodoModal } from './components/TodoModal';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -16,6 +17,15 @@ export const App: React.FC = () => {
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [todosError, setTodosError] = useState<string | null>(null);
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+
+  const handleShow = (todo: Todo) => {
+    setSelectedTodo(todo);
+  };
+
+  const handleClose = () => {
+    setSelectedTodo(null);
+  };
 
   const filteredTodos = todos.filter(todo => {
     if (filter === 'active' && todo.completed) {
@@ -82,7 +92,16 @@ export const App: React.FC = () => {
                   {todosError ? (
                     <p className="has-text-danger">{todosError}</p>
                   ) : (
-                    todos.length > 0 && <TodoList todos={filteredTodos} />
+                    todos.length > 0 && (
+                      <TodoList
+                        todos={filteredTodos}
+                        onShow={handleShow}
+                        selectedTodo={selectedTodo}
+                      />
+                    )
+                  )}
+                  {selectedTodo && (
+                    <TodoModal todo={selectedTodo} onClose={handleClose} />
                   )}
                 </>
               )}

@@ -1,25 +1,13 @@
-import React, { useState } from 'react';
 import { Todo } from '../../types/Todo';
 import cn from 'classnames';
-import { TodoModal } from '../TodoModal';
 
 interface Props {
   todos: Todo[];
+  onShow: (todo: Todo) => void;
+  selectedTodo: Todo | null;
 }
 
-export const TodoList: React.FC<Props> = ({ todos }) => {
-  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const handleModalOpen = (todo: Todo) => {
-    setSelectedTodo(todo);
-    setIsModalOpen(true);
-  };
-
-  const handleModalClose = () => {
-    setSelectedTodo(null);
-    setIsModalOpen(false);
-  };
-
+export const TodoList: React.FC<Props> = ({ todos, onShow, selectedTodo }) => {
   return (
     <>
       <table className="table is-narrow is-fullwidth">
@@ -55,7 +43,7 @@ export const TodoList: React.FC<Props> = ({ todos }) => {
                   data-cy="selectButton"
                   className="button"
                   type="button"
-                  onClick={() => handleModalOpen(todo)}
+                  onClick={() => onShow(todo)}
                 >
                   <span className="icon">
                     <i
@@ -74,14 +62,6 @@ export const TodoList: React.FC<Props> = ({ todos }) => {
           ))}
         </tbody>
       </table>
-
-      {selectedTodo && (
-        <TodoModal
-          todo={selectedTodo}
-          isModalOpen={isModalOpen}
-          onClose={handleModalClose}
-        />
-      )}
     </>
   );
 };

@@ -6,20 +6,20 @@ import { getUser } from '../../api';
 import { User } from '../../types/User';
 
 interface Props {
-  isModalOpen: boolean;
   todo: Todo;
   onClose: () => void;
 }
 
-export const TodoModal: React.FC<Props> = ({ todo, isModalOpen, onClose }) => {
+export const TodoModal: React.FC<Props> = ({ todo, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [userError, setUserError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isModalOpen && todo) {
+    if (todo) {
       setLoading(true);
       setUser(null);
+      setUserError(null);
 
       const waitDelay = new Promise(resolve => setTimeout(resolve, 1000));
       const fetchUser = getUser(todo.userId);
@@ -33,56 +33,54 @@ export const TodoModal: React.FC<Props> = ({ todo, isModalOpen, onClose }) => {
         })
         .finally(() => setLoading(false));
     }
-  }, [isModalOpen, todo]);
+  }, [todo]);
 
   return (
-    isModalOpen && (
-      <div className="modal is-active" data-cy="modal">
-        <div className="modal-background" />
+    <div className="modal is-active" data-cy="modal">
+      <div className="modal-background" />
 
-        {loading ? (
-          <Loader />
-        ) : (
-          <div className="modal-card">
-            <header className="modal-card-head">
-              <div
-                className="modal-card-title has-text-weight-medium"
-                data-cy="modal-header"
-              >
-                Todo #{todo.id}
-              </div>
-
-              {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-              <button
-                type="button"
-                className="delete"
-                data-cy="modal-close"
-                onClick={() => onClose()}
-              />
-            </header>
-
-            <div className="modal-card-body">
-              <p className="block" data-cy="modal-title">
-                {todo.title}
-              </p>
-              <p className="block" data-cy="modal-user">
-                {todo.completed ? (
-                  <strong className="has-text-success">Done</strong>
-                ) : (
-                  <strong className="has-text-danger">Planned</strong>
-                )}
-                {userError ? (
-                  <p className="has-text-danger">{userError}</p>
-                ) : (
-                  <>
-                    by <a href={`mailto:${user?.email}`}>{user?.name}</a>
-                  </>
-                )}
-              </p>
+      {loading ? (
+        <Loader />
+      ) : (
+        <div className="modal-card">
+          <header className="modal-card-head">
+            <div
+              className="modal-card-title has-text-weight-medium"
+              data-cy="modal-header"
+            >
+              Todo #{todo.id}
             </div>
+
+            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
+            <button
+              type="button"
+              className="delete"
+              data-cy="modal-close"
+              onClick={() => onClose()}
+            />
+          </header>
+
+          <div className="modal-card-body">
+            <p className="block" data-cy="modal-title">
+              {todo.title}
+            </p>
+            <p className="block" data-cy="modal-user">
+              {todo.completed ? (
+                <strong className="has-text-success">Done </strong>
+              ) : (
+                <strong className="has-text-danger">Planned </strong>
+              )}
+              {userError ? (
+                <span className="has-text-danger">{userError}</span>
+              ) : (
+                <>
+                  by <a href={`mailto:${user?.email}`}>{user?.name}</a>
+                </>
+              )}
+            </p>
           </div>
-        )}
-      </div>
-    )
+        </div>
+      )}
+    </div>
   );
 };
