@@ -2,38 +2,41 @@ import React, { useEffect, useState } from 'react';
 import { Loader } from '../Loader';
 import { Todo } from '../../types/Todo';
 
-import cn from 'classnames';
 import { getUser } from '../../api';
 import { User } from '../../types/User';
 
 interface Props {
-  isOpen: boolean;
+  isModalOpen: boolean;
   todo: Todo;
   onClose: () => void;
 }
 
-export const TodoModal: React.FC<Props> = ({ todo, isOpen, onClose }) => {
+export const TodoModal: React.FC<Props> = ({ todo, isModalOpen, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [userError, setUserError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen && todo) {
+    if (isModalOpen && todo) {
       setLoading(true);
       setUser(null);
-      const timer = setTimeout(() => {
-        setLoading(false);
-      }, 1000);
 
-      getUser(todo.userId).then(dataUser => {
-        setUser(dataUser);
-      });
+      const waitDelay = new Promise(resolve => setTimeout(resolve, 1000));
+      const fetchUser = getUser(todo.userId);
 
-      return () => clearTimeout(timer);
+      Promise.all([waitDelay, fetchUser])
+        .then(([, dataUser]) => {
+          setUser(dataUser);
+        })
+        .catch(() => {
+          setUserError('Could not fetch user');
+        })
+        .finally(() => setLoading(false));
     }
-  }, [isOpen, todo.userId]);
+  }, [isModalOpen, todo]);
 
   return (
-    isOpen && (
+    isModalOpen && (
       <div className="modal is-active" data-cy="modal">
         <div className="modal-background" />
 
@@ -46,7 +49,7 @@ export const TodoModal: React.FC<Props> = ({ todo, isOpen, onClose }) => {
                 className="modal-card-title has-text-weight-medium"
                 data-cy="modal-header"
               >
-                Todo {todo.id}
+                Todo #{todo.id}
               </div>
 
               {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
@@ -62,21 +65,19 @@ export const TodoModal: React.FC<Props> = ({ todo, isOpen, onClose }) => {
               <p className="block" data-cy="modal-title">
                 {todo.title}
               </p>
-
               <p className="block" data-cy="modal-user">
-                {/* <strong className="has-text-success">Done</strong> */}
-                <strong
-                  className={cn({
-                    'has-text-success': todo.completed,
-                    'has-text-danger': todo.completed === false,
-                  })}
-                >
-                  Planned
-                </strong>
-
-                {' by '}
-
-                <a href={`mailto:${user?.email}`}>{user?.name}</a>
+                {todo.completed ? (
+                  <strong className="has-text-success">Done</strong>
+                ) : (
+                  <strong className="has-text-danger">Planned</strong>
+                )}
+                {userError ? (
+                  <p className="has-text-danger">{userError}</p>
+                ) : (
+                  <>
+                    by <a href={`mailto:${user?.email}`}>{user?.name}</a>
+                  </>
+                )}
               </p>
             </div>
           </div>

@@ -9,15 +9,15 @@ interface Props {
 
 export const TodoList: React.FC<Props> = ({ todos }) => {
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const handleModalOpen = (todo: Todo) => {
     setSelectedTodo(todo);
-    setIsOpen(true);
+    setIsModalOpen(true);
   };
 
   const handleModalClose = () => {
     setSelectedTodo(null);
-    setIsOpen(false);
+    setIsModalOpen(false);
   };
 
   return (
@@ -58,7 +58,15 @@ export const TodoList: React.FC<Props> = ({ todos }) => {
                   onClick={() => handleModalOpen(todo)}
                 >
                   <span className="icon">
-                    <i className="far fa-eye" />
+                    <i
+                      key={todo.id}
+                      className={cn({
+                        'far fa-eye':
+                          !selectedTodo || selectedTodo.id !== todo.id,
+                        'far fa-eye-slash':
+                          selectedTodo && selectedTodo.id === todo.id,
+                      })}
+                    />
                   </span>
                 </button>
               </td>
@@ -70,7 +78,7 @@ export const TodoList: React.FC<Props> = ({ todos }) => {
       {selectedTodo && (
         <TodoModal
           todo={selectedTodo}
-          isOpen={isOpen}
+          isModalOpen={isModalOpen}
           onClose={handleModalClose}
         />
       )}

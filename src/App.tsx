@@ -15,6 +15,7 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [todosError, setTodosError] = useState<string | null>(null);
 
   const filteredTodos = todos.filter(todo => {
     if (filter === 'active' && todo.completed) {
@@ -50,6 +51,9 @@ export const App: React.FC = () => {
       .then(data => {
         setTodos(data);
       })
+      .catch(() => {
+        setTodosError('Failed to load todos. Please try again.');
+      })
       .finally(() => {
         setLoading(false);
       });
@@ -64,6 +68,7 @@ export const App: React.FC = () => {
 
             <div className="block">
               <TodoFilter
+                searchQuery={searchQuery}
                 onFilterChange={handleFilterChange}
                 onSearchChange={handleSearchChange}
               />
@@ -72,8 +77,14 @@ export const App: React.FC = () => {
             <div className="block">
               {loading && <Loader />}
 
-              {!loading && todos.length > 0 && (
-                <TodoList todos={filteredTodos} />
+              {!loading && (
+                <>
+                  {todosError ? (
+                    <p className="has-text-danger">{todosError}</p>
+                  ) : (
+                    todos.length > 0 && <TodoList todos={filteredTodos} />
+                  )}
+                </>
               )}
             </div>
           </div>
